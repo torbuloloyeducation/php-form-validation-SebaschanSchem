@@ -1,10 +1,17 @@
 <?php
-$nameErr = $emailErr = $genderErr = "";
-$name = $email = $website = $comment = $gender = "";
+$nameErr =$passwordErr = $ConPasswordErr= $emailErr = $websiteErr = $genderErr = $phoneErr = $termErr ="";
+$name = $password = $ConPassword = $email = $website = $comment = $gender = $phone = $term ="";
 $submitted = false;
+$count = 0;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $submitted = true;
+
+     if (isset($_POST["count"])) {
+        $count = (int)$_POST["count"] + 1;
+    } else {
+        $count = 1;
+    }
 
     if (empty($_POST["name"])) {
         $nameErr = "Name is required";
@@ -12,6 +19,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $name = test_input($_POST["name"]);
         if (!preg_match("/^[a-zA-Z-' ]*$/", $name)) {
             $nameErr = "Only letters and white space allowed";
+        }
+    }
+
+    if (empty($_POST["password"])) {
+        $passwordErr = "password is required";
+    } else {
+        $password = test_input($_POST["password"]);
+        if (!preg_match("/^.{8,}$/", $password)) {
+            $passwordErr = "Password must be at least 8 characters";
+        }
+    }
+
+    if (empty($_POST["ConPassword"])) {
+        $ConPasswordErr = "Confirmation Password is required";
+    } else {
+        $ConPassword = test_input($_POST["ConPassword"]);
+        if ($password !== $ConPassword) {
+            $ConPasswordErr = "Password not match";
+        }
+    }
+
+    if(empty($_POST["phone"])){
+        $phoneErr = "Phone is required";
+    } else {
+        $phone = test_input($_POST["phone"]);
+        if (!preg_match("/^[0-9]{11}$/", $phone)) {
+            $phoneErr = "Phone number must be exactly 11 digits";
         }
     }
 
@@ -27,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!empty($_POST["website"])) {
         $website = test_input($_POST["website"]);
         if (!filter_var($website, FILTER_VALIDATE_URL)) {
-            $website = "";
+            $websiteErr = "Invalid URL format.";
         }
     }
 
@@ -38,6 +72,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $gender = test_input($_POST["gender"]);
     }
+
+    if (!isset($_POST["terms"])) {
+        $termErr = "You must agree to the terms and conditions.";
+    } else {
+        $term = "accepted";
+    }
+
+    if (empty($termErr)) {
+        $submitted = true;
+    }
+
 }
 
 function test_input($data) {
@@ -213,6 +258,7 @@ $formValid = $submitted && empty($nameErr) && empty($emailErr) && empty($genderE
 <body>
 
 <div class="form-container">
+    <p><strong>Submission attempt:</strong> <?= $count ?></p>
     <h2>Get in Touch</h2>
     <p class="required-note">Fields marked with <span style="color:var(--error-red)">*</span> are required.</p>
 
@@ -226,19 +272,38 @@ $formValid = $submitted && empty($nameErr) && empty($emailErr) && empty($genderE
 
         <div class="field-row">
             <label for="name">Name <span style="color:var(--error-red)">*</span></label>
-            <input type="text" id="name" name="name" placeholder="Jane Doe" value="<?= $name ?>">
+            <input type="text" id="name" name="name" placeholder="Jane Doe" value="<?= $name ?>" required >
             <?php if($nameErr): ?><span class="error"><?= $nameErr ?></span><?php endif; ?>
         </div>
 
         <div class="field-row">
+            <label for="password">Password <span style="color:var(--error-red)">*</span></label>
+            <input type="password" id="password" name="password" pattern=".{8,}" placeholder="********" required >
+            <?php if($passwordErr): ?><span class="error"><?= $passwordErr ?></span><?php endif; ?>
+        </div>
+
+        <div class="field-row"> 
+            <label for="ConPassword">Confirm-Password <span style="color:var(--error-red)">*</span></label>
+            <input type="password" id="ConPassword" name="ConPassword" pattern=".{8,}" placeholder="********" required >
+            <?php if($ConPasswordErr): ?><span class="error"><?= $ConPasswordErr ?></span><?php endif; ?>
+        </div>
+
+        <div class="field-row">
             <label for="email">E-mail <span style="color:var(--error-red)">*</span></label>
-            <input type="text" id="email" name="email" placeholder="jane@example.com" value="<?= $email ?>">
+            <input type="text" id="email" name="email" placeholder="jane@example.com" value="<?= $email ?>" required >
             <?php if($emailErr): ?><span class="error"><?= $emailErr ?></span><?php endif; ?>
         </div>
 
         <div class="field-row">
+            <label for="phone">Phone Number <span style="color:var(--error-red)">*</span></label>
+            <input type="tel" id="phone" name="phone" pattern="[0-9]{11}" placeholder="0912-***-****" value="<?= $phone ?>" required>
+            <?php if($phoneErr): ?><span class="error"><?= $phoneErr ?></span><?php endif; ?>
+        </div>
+
+        <div class="field-row">
             <label for="website">Website</label>
-            <input type="text" id="website" name="website" placeholder="https://..." value="<?= $website ?>">
+            <input type="text" id="website" name="website" pattern="https?://.+" placeholder="https://example.com" value="<?= $website ?>">
+            <?php if($websiteErr): ?><span class="error"><?= $websiteErr ?></span><?php endif; ?> 
         </div>
 
         <div class="field-row">
@@ -256,7 +321,22 @@ $formValid = $submitted && empty($nameErr) && empty($emailErr) && empty($genderE
             <?php if($genderErr): ?><span class="error"><?= $genderErr ?></span><?php endif; ?>
         </div>
 
+        <div class="field-row">
+        <label>
+            <input type="checkbox" name="terms" required 
+                <?= isset($_POST['terms']) ? "checked" : "" ?>>
+            I agree to the Terms and Conditions
+        </label>
+        <br>
+        <?php if($termErr): ?>
+            <span class="error"><?= $termErr ?></span>
+        <?php endif; ?>
+    </div>
+
+
         <button type="submit">Send Message</button>
+
+        <input type="hidden" name="count" value="<?= $count ?>">
     </form>
 
     <div class="output-box">
@@ -264,6 +344,7 @@ $formValid = $submitted && empty($nameErr) && empty($emailErr) && empty($genderE
             <h3>Your Input:</h3>
             <p><strong>Name:</strong> <?= $name ?></p>
             <p><strong>E-mail:</strong> <?= $email ?></p>
+            <p><strong>Phone-Number:</strong> <?=  $phone ?></p>
             <?php if (!empty($website)): ?><p><strong>Website:</strong> <?= $website ?></p><?php endif; ?>
             <p><strong>Gender:</strong> <?= $gender ?></p>
         <?php elseif ($submitted && !$formValid): ?>
@@ -271,6 +352,7 @@ $formValid = $submitted && empty($nameErr) && empty($emailErr) && empty($genderE
         <?php else: ?>
             <p style="margin:0; font-style: italic;">Results will appear here after submission.</p>
         <?php endif; ?>
+
     </div>
 </div>
 
