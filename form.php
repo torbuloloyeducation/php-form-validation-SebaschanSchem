@@ -33,12 +33,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($_POST["ConPassword"])) {
         $ConPasswordErr = "Confirmation Password is required";
-        $formValid = false;
     } else {
         $ConPassword = test_input($_POST["ConPassword"]);
         if ($password !== $ConPassword) {
             $ConPasswordErr = "Password not match";
-            $formValid = false;
         }
     }
 
@@ -296,7 +294,7 @@ $formValid = $submitted && empty($nameErr) && empty($emailErr) && empty($genderE
             <?php if($emailErr): ?><span class="error"><?= $emailErr ?></span><?php endif; ?>
         </div>
 
-        <div class="field-row"> <!-- contact -->
+        <div class="field-row">
             <label for="phone">Phone Number <span style="color:var(--error-red)">*</span></label>
             <input type="tel" id="phone" name="phone" pattern="[0-9]{11}" placeholder="0912-***-****" value="<?= $phone ?>" required>
             <?php if($phoneErr): ?><span class="error"><?= $phoneErr ?></span><?php endif; ?>
